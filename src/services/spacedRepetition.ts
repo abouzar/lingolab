@@ -60,7 +60,7 @@ export class SpacedRepetitionService {
       nextInterval: newInterval,
       easeFactor: newEaseFactor,
       repetitions: newRepetitions,
-      nextReviewDate
+      nextReviewDate,
     }
   }
 
@@ -71,11 +71,7 @@ export class SpacedRepetitionService {
    * @param difficulty - Word difficulty (1-5)
    * @returns Quality score (0-5)
    */
-  static responseToQuality(
-    correct: boolean,
-    responseTime: number,
-    difficulty: number = 3
-  ): number {
+  static responseToQuality(correct: boolean, responseTime: number, difficulty: number = 3): number {
     if (!correct) {
       // Incorrect responses get 0-2 based on how quickly they realized the mistake
       return responseTime < 5 ? 1 : 0
@@ -133,10 +129,10 @@ export class SpacedRepetitionService {
     // Update statistics
     const newTotalReviews = currentProgress.totalReviews + 1
     const newCorrectStreak = correct ? currentProgress.correctStreak + 1 : 0
-    
+
     // Calculate new average response time
     const currentAvg = currentProgress.averageResponseTime || responseTime
-    const newAverageResponseTime = 
+    const newAverageResponseTime =
       (currentAvg * currentProgress.totalReviews + responseTime) / newTotalReviews
 
     return {
@@ -148,7 +144,7 @@ export class SpacedRepetitionService {
       correctStreak: newCorrectStreak,
       totalReviews: newTotalReviews,
       averageResponseTime: newAverageResponseTime,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     }
   }
 
@@ -158,19 +154,16 @@ export class SpacedRepetitionService {
    * @param limit - Maximum number of words to return
    * @returns Words due for review, sorted by priority
    */
-  static getWordsForReview(
-    allProgress: WordProgress[],
-    limit: number = 20
-  ): WordProgress[] {
+  static getWordsForReview(allProgress: WordProgress[], limit: number = 20): WordProgress[] {
     const now = new Date()
-    
+
     return allProgress
-      .filter(progress => progress.nextReviewDate <= now)
+      .filter((progress) => progress.nextReviewDate <= now)
       .sort((a, b) => {
         // Sort by next review date (overdue first)
         const dateComparison = a.nextReviewDate.getTime() - b.nextReviewDate.getTime()
         if (dateComparison !== 0) return dateComparison
-        
+
         // Then by difficulty (harder words first)
         const difficultyA = a.word?.difficulty || 3
         const difficultyB = b.word?.difficulty || 3
@@ -186,25 +179,27 @@ export class SpacedRepetitionService {
    */
   static calculateStats(allProgress: WordProgress[]) {
     const totalWords = allProgress.length
-    const reviewedWords = allProgress.filter(p => p.totalReviews > 0).length
-    const masteredWords = allProgress.filter(p => p.repetitions >= 3 && p.correctStreak >= 3).length
-    const wordsForReview = allProgress.filter(p => p.nextReviewDate <= new Date()).length
-    
+    const reviewedWords = allProgress.filter((p) => p.totalReviews > 0).length
+    const masteredWords = allProgress.filter(
+      (p) => p.repetitions >= 3 && p.correctStreak >= 3
+    ).length
+    const wordsForReview = allProgress.filter((p) => p.nextReviewDate <= new Date()).length
+
     const totalReviews = allProgress.reduce((sum, p) => sum + p.totalReviews, 0)
     const totalCorrect = allProgress.reduce((sum, p) => {
       // Estimate correct answers based on streak and total reviews
       return sum + Math.min(p.correctStreak, p.totalReviews)
     }, 0)
-    
+
     const accuracy = totalReviews > 0 ? (totalCorrect / totalReviews) * 100 : 0
-    
+
     return {
       totalWords,
       reviewedWords,
       masteredWords,
       wordsForReview,
       accuracy: Math.round(accuracy),
-      totalReviews
+      totalReviews,
     }
   }
 }

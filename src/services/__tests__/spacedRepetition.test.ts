@@ -6,7 +6,7 @@ describe('Spaced Repetition Service', () => {
   describe('calculateNextReview', () => {
     it('should increase interval for correct answers', () => {
       const result = SpacedRepetitionService.calculateNextReview(4, 1, 2.5, 1)
-      
+
       expect(result.nextInterval).toBeGreaterThan(1)
       expect(result.repetitions).toBe(2)
       expect(result.easeFactor).toBeGreaterThanOrEqual(2.5)
@@ -14,7 +14,7 @@ describe('Spaced Repetition Service', () => {
 
     it('should reset interval for incorrect answers', () => {
       const result = SpacedRepetitionService.calculateNextReview(2, 10, 2.5, 5)
-      
+
       expect(result.nextInterval).toBe(1)
       expect(result.repetitions).toBe(0)
       expect(result.easeFactor).toBeLessThan(2.5)
@@ -27,12 +27,22 @@ describe('Spaced Repetition Service', () => {
       expect(first.repetitions).toBe(1)
 
       // Second correct answer
-      const second = SpacedRepetitionService.calculateNextReview(4, first.nextInterval, first.easeFactor, first.repetitions)
+      const second = SpacedRepetitionService.calculateNextReview(
+        4,
+        first.nextInterval,
+        first.easeFactor,
+        first.repetitions
+      )
       expect(second.nextInterval).toBe(6)
       expect(second.repetitions).toBe(2)
 
       // Third correct answer should use ease factor
-      const third = SpacedRepetitionService.calculateNextReview(4, second.nextInterval, second.easeFactor, second.repetitions)
+      const third = SpacedRepetitionService.calculateNextReview(
+        4,
+        second.nextInterval,
+        second.easeFactor,
+        second.repetitions
+      )
       expect(third.nextInterval).toBeGreaterThan(6)
       expect(third.repetitions).toBe(3)
     })
@@ -76,12 +86,12 @@ describe('Spaced Repetition Service', () => {
           difficulty: 2,
           language: 'german',
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       }
 
       const updated = SpacedRepetitionService.updateProgress(mockProgress, true, 2)
-      
+
       expect(updated.correctStreak).toBe(1)
       expect(updated.totalReviews).toBe(1)
       expect(updated.repetitions).toBeGreaterThan(0)
@@ -108,12 +118,12 @@ describe('Spaced Repetition Service', () => {
           difficulty: 2,
           language: 'german',
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       }
 
       const updated = SpacedRepetitionService.updateProgress(mockProgress, false, 5)
-      
+
       expect(updated.correctStreak).toBe(0)
       expect(updated.totalReviews).toBe(6)
       expect(updated.repetitions).toBe(0)
@@ -138,7 +148,7 @@ describe('Spaced Repetition Service', () => {
           correctStreak: 0,
           totalReviews: 0,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         {
           id: 'test-2',
@@ -150,12 +160,12 @@ describe('Spaced Repetition Service', () => {
           correctStreak: 0,
           totalReviews: 0,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       ]
 
       const wordsForReview = SpacedRepetitionService.getWordsForReview(mockProgress)
-      
+
       expect(wordsForReview).toHaveLength(1)
       expect(wordsForReview[0].id).toBe('test-1')
     })
@@ -174,7 +184,7 @@ describe('Spaced Repetition Service', () => {
           correctStreak: 5,
           totalReviews: 8,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         {
           id: 'test-2',
@@ -186,12 +196,12 @@ describe('Spaced Repetition Service', () => {
           correctStreak: 2,
           totalReviews: 3,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       ]
 
       const stats = SpacedRepetitionService.calculateStats(mockProgress)
-      
+
       expect(stats.totalWords).toBe(2)
       expect(stats.reviewedWords).toBe(2)
       expect(stats.masteredWords).toBe(1) // Only first word meets mastery criteria

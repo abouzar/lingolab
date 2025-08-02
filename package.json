@@ -15,7 +15,11 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "node prisma/seed.js",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test:pipeline": "node scripts/test-pipeline.js",
+    "test:quick": "node scripts/quick-test.js",
+    "test:pre-commit": "node scripts/pre-commit-test.js",
+    "test:db-health": "node scripts/db-health-check.js"
   },
   "dependencies": {
     "@prisma/client": "^6.13.0",
@@ -35,6 +39,7 @@
     "@vue/test-utils": "^2.4.3",
     "@vue/tsconfig": "^0.5.1",
     "autoprefixer": "^10.4.16",
+    "chalk": "^5.4.1",
     "eslint": "^8.49.0",
     "eslint-plugin-vue": "^9.17.0",
     "jsdom": "^23.0.1",

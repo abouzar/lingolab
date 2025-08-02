@@ -68,6 +68,12 @@ A comprehensive web-based language learning application built with Vue.js, TypeS
 - `npm run db:studio` - Open Prisma Studio (database GUI)
 - `npm run db:generate` - Generate Prisma client
 
+### Testing
+- `npm run test:pipeline` - Full comprehensive test pipeline
+- `npm run test:quick` - Fast essential checks (recommended for development)
+- `npm run test:pre-commit` - Pre-commit validation
+- `npm run test:db-health` - Database integrity checks
+
 ## Project Structure
 
 ```
@@ -95,6 +101,7 @@ docs/
 ## Documentation
 
 - [Database Schema](docs/SCHEMA.md) - Detailed explanation of the database structure and relationships
+- [Testing Guide](docs/TESTING.md) - Comprehensive testing pipeline and validation procedures
 
 ## Development
 

@@ -1,12 +1,5 @@
 import { PrismaClient } from '../generated/prisma'
-import type { 
-  Word, 
-  TrainingSet, 
-  WordProgress, 
-  User, 
-  Language,
-  UserFavoriteWord
-} from '../types'
+import type { Word, TrainingSet, WordProgress, User, Language, UserFavoriteWord } from '../types'
 
 // Create a singleton instance of Prisma Client
 let prisma: PrismaClient
@@ -31,13 +24,13 @@ export class DatabaseService {
   static async getAllLanguages(): Promise<Language[]> {
     return await prisma.language.findMany({
       where: { isActive: true },
-      orderBy: { name: 'asc' }
+      orderBy: { name: 'asc' },
     })
   }
 
   static async getLanguageByCode(code: string): Promise<Language | null> {
     return await prisma.language.findUnique({
-      where: { code }
+      where: { code },
     })
   }
 
@@ -49,26 +42,26 @@ export class DatabaseService {
         activeLanguage: true,
         userLanguages: {
           include: {
-            language: true
-          }
-        }
-      }
+            language: true,
+          },
+        },
+      },
     })
   }
 
   static async getDefaultUser(): Promise<User | null> {
     return await prisma.user.findFirst({
       where: {
-        email: 'default@lingolab.dev'
+        email: 'default@lingolab.dev',
       },
       include: {
         activeLanguage: true,
         userLanguages: {
           include: {
-            language: true
-          }
-        }
-      }
+            language: true,
+          },
+        },
+      },
     })
   }
 
@@ -80,10 +73,10 @@ export class DatabaseService {
         activeLanguage: true,
         userLanguages: {
           include: {
-            language: true
-          }
-        }
-      }
+            language: true,
+          },
+        },
+      },
     })
   }
 
@@ -95,11 +88,11 @@ export class DatabaseService {
         language: true,
         translations: true,
         attributes: true,
-        examples: true
+        examples: true,
       },
       orderBy: {
-        text: 'asc'
-      }
+        text: 'asc',
+      },
     })
   }
 
@@ -110,14 +103,14 @@ export class DatabaseService {
         language: true,
         translations: true,
         attributes: true,
-        examples: true
-      }
+        examples: true,
+      },
     })
   }
 
   static async searchWords(
-    languageId: string, 
-    searchTerm: string, 
+    languageId: string,
+    searchTerm: string,
     limit: number = 20
   ): Promise<Word[]> {
     return await prisma.word.findMany({
@@ -125,41 +118,38 @@ export class DatabaseService {
         languageId,
         OR: [
           { text: { contains: searchTerm } },
-          { translations: { some: { translation: { contains: searchTerm } } } }
-        ]
+          { translations: { some: { translation: { contains: searchTerm } } } },
+        ],
       },
       include: {
         language: true,
         translations: true,
         attributes: true,
-        examples: true
+        examples: true,
       },
       take: limit,
       orderBy: [
         { frequency: 'asc' }, // More frequent words first
-        { difficulty: 'asc' }  // Easier words first
-      ]
+        { difficulty: 'asc' }, // Easier words first
+      ],
     })
   }
 
-  static async getWordsByPartOfSpeech(
-    languageId: string, 
-    partOfSpeech: string
-  ): Promise<Word[]> {
+  static async getWordsByPartOfSpeech(languageId: string, partOfSpeech: string): Promise<Word[]> {
     return await prisma.word.findMany({
       where: {
         languageId,
-        partOfSpeech
+        partOfSpeech,
       },
       include: {
         language: true,
         translations: true,
         attributes: true,
-        examples: true
+        examples: true,
       },
       orderBy: {
-        frequency: 'asc'
-      }
+        frequency: 'asc',
+      },
     })
   }
 
@@ -173,26 +163,26 @@ export class DatabaseService {
             language: true,
             translations: true,
             attributes: true,
-            examples: true
-          }
-        }
+            examples: true,
+          },
+        },
       },
       orderBy: {
-        addedAt: 'desc'
-      }
+        addedAt: 'desc',
+      },
     })
   }
 
   static async addWordToFavorites(
-    userId: string, 
-    wordId: string, 
+    userId: string,
+    wordId: string,
     notes?: string
   ): Promise<UserFavoriteWord> {
     return await prisma.userFavoriteWord.create({
       data: {
         userId,
         wordId,
-        notes
+        notes,
       },
       include: {
         word: {
@@ -200,10 +190,10 @@ export class DatabaseService {
             language: true,
             translations: true,
             attributes: true,
-            examples: true
-          }
-        }
-      }
+            examples: true,
+          },
+        },
+      },
     })
   }
 
@@ -212,9 +202,9 @@ export class DatabaseService {
       where: {
         userId_wordId: {
           userId,
-          wordId
-        }
-      }
+          wordId,
+        },
+      },
     })
   }
 
@@ -223,7 +213,7 @@ export class DatabaseService {
     return await prisma.trainingSet.findMany({
       where: {
         userId,
-        ...(languageId && { languageId })
+        ...(languageId && { languageId }),
       },
       include: {
         language: true,
@@ -234,18 +224,18 @@ export class DatabaseService {
                 language: true,
                 translations: true,
                 attributes: true,
-                examples: true
-              }
-            }
+                examples: true,
+              },
+            },
           },
           orderBy: {
-            order: 'asc'
-          }
-        }
+            order: 'asc',
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: 'desc',
+      },
     })
   }
 
@@ -261,15 +251,15 @@ export class DatabaseService {
                 language: true,
                 translations: true,
                 attributes: true,
-                examples: true
-              }
-            }
+                examples: true,
+              },
+            },
           },
           orderBy: {
-            order: 'asc'
-          }
-        }
-      }
+            order: 'asc',
+          },
+        },
+      },
     })
   }
 
@@ -291,9 +281,9 @@ export class DatabaseService {
         words: {
           create: wordIds.map((wordId, index) => ({
             wordId,
-            order: index
-          }))
-        }
+            order: index,
+          })),
+        },
       },
       include: {
         language: true,
@@ -304,15 +294,15 @@ export class DatabaseService {
                 language: true,
                 translations: true,
                 attributes: true,
-                examples: true
-              }
-            }
+                examples: true,
+              },
+            },
           },
           orderBy: {
-            order: 'asc'
-          }
-        }
-      }
+            order: 'asc',
+          },
+        },
+      },
     })
   }
 
@@ -322,8 +312,8 @@ export class DatabaseService {
       where: {
         userId_wordId: {
           userId,
-          wordId
-        }
+          wordId,
+        },
       },
       include: {
         word: {
@@ -331,10 +321,10 @@ export class DatabaseService {
             language: true,
             translations: true,
             attributes: true,
-            examples: true
-          }
-        }
-      }
+            examples: true,
+          },
+        },
+      },
     })
   }
 
@@ -347,14 +337,14 @@ export class DatabaseService {
       where: {
         userId_wordId: {
           userId,
-          wordId
-        }
+          wordId,
+        },
       },
       update: progressData,
       create: {
         wordId,
         userId,
-        ...progressData
+        ...progressData,
       },
       include: {
         word: {
@@ -362,10 +352,10 @@ export class DatabaseService {
             language: true,
             translations: true,
             attributes: true,
-            examples: true
-          }
-        }
-      }
+            examples: true,
+          },
+        },
+      },
     })
   }
 
@@ -374,13 +364,13 @@ export class DatabaseService {
       where: {
         userId,
         nextReviewDate: {
-          lte: new Date()
+          lte: new Date(),
         },
         ...(languageId && {
           word: {
-            languageId
-          }
-        })
+            languageId,
+          },
+        }),
       },
       include: {
         word: {
@@ -388,13 +378,13 @@ export class DatabaseService {
             language: true,
             translations: true,
             attributes: true,
-            examples: true
-          }
-        }
+            examples: true,
+          },
+        },
       },
       orderBy: {
-        nextReviewDate: 'asc'
-      }
+        nextReviewDate: 'asc',
+      },
     })
   }
 
@@ -404,44 +394,45 @@ export class DatabaseService {
       userId,
       ...(languageId && {
         word: {
-          languageId
-        }
-      })
+          languageId,
+        },
+      }),
     }
 
     const [totalWords, reviewedWords, masteredWords, wordsForReview] = await Promise.all([
       prisma.wordProgress.count({ where: whereClause }),
-      prisma.wordProgress.count({ 
-        where: { ...whereClause, totalReviews: { gt: 0 } } 
+      prisma.wordProgress.count({
+        where: { ...whereClause, totalReviews: { gt: 0 } },
       }),
-      prisma.wordProgress.count({ 
-        where: { 
-          ...whereClause, 
-          repetitions: { gte: 3 }, 
-          correctStreak: { gte: 3 } 
-        } 
+      prisma.wordProgress.count({
+        where: {
+          ...whereClause,
+          repetitions: { gte: 3 },
+          correctStreak: { gte: 3 },
+        },
       }),
-      prisma.wordProgress.count({ 
-        where: { 
-          ...whereClause, 
-          nextReviewDate: { lte: new Date() } 
-        } 
-      })
+      prisma.wordProgress.count({
+        where: {
+          ...whereClause,
+          nextReviewDate: { lte: new Date() },
+        },
+      }),
     ])
 
     const progressRecords = await prisma.wordProgress.findMany({
       where: whereClause,
       select: {
         totalReviews: true,
-        correctStreak: true
-      }
+        correctStreak: true,
+      },
     })
 
     const totalReviews = progressRecords.reduce((sum, p) => sum + p.totalReviews, 0)
-    const totalCorrect = progressRecords.reduce((sum, p) => 
-      sum + Math.min(p.correctStreak, p.totalReviews), 0
+    const totalCorrect = progressRecords.reduce(
+      (sum, p) => sum + Math.min(p.correctStreak, p.totalReviews),
+      0
     )
-    
+
     const accuracy = totalReviews > 0 ? Math.round((totalCorrect / totalReviews) * 100) : 0
 
     return {
@@ -450,7 +441,7 @@ export class DatabaseService {
       masteredWords,
       wordsForReview,
       accuracy,
-      totalReviews
+      totalReviews,
     }
   }
 }
