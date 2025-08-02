@@ -1,0 +1,218 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model with multi-language support
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  username         String    @unique
+  nativeLanguage   String    @default("english")
+  activeLanguageId String?   // Current active target language
+  dailyGoal        Int       @default(20)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  // Relations
+  activeLanguage   Language?           @relation("ActiveLanguage", fields: [activeLanguageId], references: [id])
+  userLanguages    UserLanguage[]      // All languages user is learning
+  trainingSets     TrainingSet[]
+  wordProgress     WordProgress[]
+  favoriteWords    UserFavoriteWord[]  // User's favorite words
+  
+  @@map("users")
+}
+
+// Language model - supports multiple target languages
+model Language {
+  id               String    @id @default(cuid())
+  code             String    @unique // ISO 639-1 code (e.g., "de", "fr", "es")
+  name             String    // Display name (e.g., "German", "French")
+  nativeName       String    // Native name (e.g., "Deutsch", "Français")
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  
+  // Relations
+  words            Word[]
+  userLanguages    UserLanguage[]
+  activeForUsers   User[]              @relation("ActiveLanguage")
+  trainingSets     TrainingSet[]
+  
+  @@map("languages")
+}
+
+// Junction table for user-language relationships
+model UserLanguage {
+  id               String    @id @default(cuid())
+  userId           String
+  languageId       String
+  proficiencyLevel String    @default("beginner") // beginner, intermediate, advanced
+  startedAt        DateTime  @default(now())
+  lastActiveAt     DateTime  @default(now())
+  
+  // Relations
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language         Language  @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, languageId])
+  @@map("user_languages")
+}
+
+// Word model - language-specific vocabulary with rich attributes
+model Word {
+  id              String    @id @default(cuid())
+  text            String    // The word itself
+  languageId      String    // Which language this word belongs to
+  partOfSpeech    String    // noun, verb, adjective, etc.
+  difficulty      Int       @default(1) // 1-5 scale
+  frequency       Int?      // Word frequency rank (1 = most common)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  language        Language            @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  translations    WordTranslation[]   // Multiple translations in different languages
+  attributes      WordAttribute[]     // Language-specific attributes (articles, plurals, etc.)
+  examples        Example[]
+  trainingSets    TrainingSetWord[]
+  progress        WordProgress[]
+  favorites       UserFavoriteWord[]  // Users who favorited this word
+  
+  // Unique constraint: same word text can exist in different languages
+  @@unique([text, languageId])
+  @@map("words")
+}
+
+// Word translations - supports multiple target languages for translation
+model WordTranslation {
+  id              String    @id @default(cuid())
+  wordId          String
+  targetLanguage  String    // Language code for the translation
+  translation     String    // The actual translation
+  context         String?   // Context where this translation applies
+  isMain          Boolean   @default(false) // Primary translation
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  word            Word      @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  
+  @@unique([wordId, targetLanguage, translation])
+  @@map("word_translations")
+}
+
+// Language-specific word attributes (articles, plurals, conjugations, etc.)
+model WordAttribute {
+  id              String    @id @default(cuid())
+  wordId          String
+  attributeType   String    // "article", "plural", "gender", "conjugation", etc.
+  attributeValue  String    // The actual value
+  context         String?   // When this attribute applies
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  word            Word      @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  
+  @@unique([wordId, attributeType, context])
+  @@map("word_attributes")
+}
+
+// User favorite words - many-to-many relationship
+model UserFavoriteWord {
+  id              String    @id @default(cuid())
+  userId          String
+  wordId          String
+  addedAt         DateTime  @default(now())
+  notes           String?   // User's personal notes about the word
+  
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word            Word      @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, wordId])
+  @@map("user_favorite_words")
+}
+
+// Example sentences for words
+model Example {
+  id          String   @id @default(cuid())
+  sentence    String   // German sentence
+  translation String   // English translation
+  wordId      String
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  word        Word     @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  
+  @@map("examples")
+}
+
+// Training set model - collections of words for focused study
+model TrainingSet {
+  id          String    @id @default(cuid())
+  name        String    // Name is no longer globally unique
+  description String?
+  category    String    @default("general")
+  languageId  String?   // Language this set is for (optional for mixed sets)
+  isPublic    Boolean   @default(false)
+  userId      String    // Required - each set belongs to a user
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language    Language? @relation(fields: [languageId], references: [id], onDelete: SetNull)
+  words       TrainingSetWord[]
+  
+  // Unique constraint: user can't have duplicate set names for same language
+  @@unique([userId, name, languageId])
+  @@map("training_sets")
+}
+
+// Junction table for many-to-many relationship between TrainingSet and Word
+model TrainingSetWord {
+  id            String      @id @default(cuid())
+  trainingSetId String
+  wordId        String
+  order         Int         @default(0) // For custom ordering within sets
+  addedAt       DateTime    @default(now())
+  
+  // Relations
+  trainingSet   TrainingSet @relation(fields: [trainingSetId], references: [id], onDelete: Cascade)
+  word          Word        @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  
+  @@unique([trainingSetId, wordId])
+  @@map("training_set_words")
+}
+
+// Word progress tracking for spaced repetition
+model WordProgress {
+  id                  String    @id @default(cuid())
+  userId              String    // Required - progress belongs to a user
+  wordId              String
+  currentInterval     Int       @default(1) // Days until next review
+  easeFactor          Float     @default(2.5) // SM-2 algorithm ease factor
+  repetitions         Int       @default(0) // Number of successful repetitions
+  nextReviewDate      DateTime  @default(now())
+  lastReviewDate      DateTime?
+  correctStreak       Int       @default(0)
+  totalReviews        Int       @default(0)
+  averageResponseTime Float?    // In seconds
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  // Relations
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  word                Word      @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, wordId])
+  @@map("word_progress")
+}

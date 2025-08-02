@@ -9,7 +9,7 @@
   - Create basic layout components and routing structure
   - _Requirements: 12.1, 12.3, 12.4_
 
-- [ ] 2. Database Schema and Core Models
+- [x] 2. Database Schema and Core Models
   - Set up SQLite database with Prisma ORM
   - Create database schema for words, training sets, and progress tracking (hardcode German as target language)
   - Implement database models with proper relationships and constraints
