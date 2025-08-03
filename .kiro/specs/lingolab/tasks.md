@@ -16,7 +16,7 @@
   - Create database migration scripts and seed data for German vocabulary
   - _Requirements: 3.1, 4.1, 5.1_
 
-- [ ] 3. Backend API Foundation
+- [x] 3. Backend API Foundation
   - Set up Express.js server with TypeScript configuration
   - Implement middleware for CORS, body parsing, and error handling
   - Create basic API structure with route organization
