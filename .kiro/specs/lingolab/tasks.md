@@ -23,7 +23,7 @@
   - Set up request validation using Zod schemas
   - _Requirements: 12.1, 12.3_
 
-- [ ] 4. Core Word and Training Set Models
+- [x] 4. Core Word and Training Set Models
   - Implement Word model with validation and database operations (German language hardcoded)
   - Create TrainingSet model with word relationships
   - Build API endpoints for CRUD operations on training sets

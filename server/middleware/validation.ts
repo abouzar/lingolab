@@ -15,7 +15,9 @@ export const validateRequest = (schema: {
 
       // Validate query parameters
       if (schema.query) {
-        const parsedQuery = schema.query.parse(req.query);
+        // Only validate if there are actual query parameters or if the schema requires them
+        const hasQueryParams = Object.keys(req.query).length > 0;
+        const parsedQuery = schema.query.parse(hasQueryParams ? req.query : {});
         req.query = parsedQuery as any;
       }
 

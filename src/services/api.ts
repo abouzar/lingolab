@@ -1,5 +1,5 @@
 // Base API configuration and utilities
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
 
 export interface ApiResponse<T> {
   success: boolean
@@ -40,7 +40,7 @@ class ApiClient {
 
       return {
         success: true,
-        data,
+        data: data.data, // Extract the actual data from the backend response
       }
     } catch (error) {
       return {
